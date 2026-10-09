@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Study Planner</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-purple-300 min-h-screen p-4">
+
+    <div class="max-w-3xl mx-auto mt-6">
+
+        <header class="bg-gradient-to-r from-purple-700 via-indigo-600 to-purple-700 text-white p-6 rounded-2xl shadow-lg mb-6">
+            <h1 class="text-3xl font-bold text-center">
+                Smart Study Planner
+            </h1>
+            <p class="text-center mt-2">
+                Plan your studies and achieve your goals!
+            </p>
+        </header>
+
+        <div class="bg-white p-6 rounded-xl shadow-md mb-6">
+            <h2 class="text-xl font-bold text-purple-700 mb-4">
+                Add Study Task
+            </h2>
+
+            <form id="studyForm" class="space-y-4">
+
+                <input type="text" id="subject"
+                    placeholder="Enter subject name"
+                    class="w-full border p-3 rounded-lg" required>
+
+                <input type="text" id="topic"
+                    placeholder="Enter study topic"
+                    class="w-full border p-3 rounded-lg" required>
+
+                <label class="block font-medium text-gray-700">
+                    Study Deadline
+                </label>
+
+                <input type="date" id="deadline"
+                    class="w-full border p-3 rounded-lg" required>
+
+                <button type="submit"
+                    class="w-full bg-green-600 text-white p-3 rounded-lg hover:bg-purple-700">
+                    + Add Task
+                </button>
+
+            </form>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+
+            <div class="bg-white p-5 rounded-xl shadow text-center">
+                <h3 class="text-gray-500">Total Tasks</h3>
+                <p id="totalTasks" class="text-3xl font-bold text-purple-700">0</p>
+            </div>
+
+            <div class="bg-white p-5 rounded-xl shadow text-center">
+                <h3 class="text-gray-500">Pending</h3>
+                <p id="pendingTasks" class="text-3xl font-bold text-orange-500">0</p>
+            </div>
+
+            <div class="bg-white p-5 rounded-xl shadow text-center">
+                <h3 class="text-gray-500">Completed</h3>
+                <p id="completedTasks" class="text-3xl font-bold text-green-600">0</p>
+            </div>
+
+        </div>
+
+        <div class="bg-white p-6 rounded-xl shadow-md">
+            <h2 class="text-xl font-bold text-purple-700 mb-4">
+                My Study Tasks
+            </h2>
+
+            <div id="taskList" class="space-y-4"></div>
+
+            <p id="emptyMessage" class="text-center text-gray-500">
+                No study tasks added yet.
+            </p>
+        </div>
+
+        <footer class="text-center text-gray-500 mt-6 p-3">
+            Smart Study Planner | Stay Focused, Stay Successful
+        </footer>
+
+    </div>
+
+    <script>
+        let tasks = [];
+
+        document.getElementById("studyForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+
+            let subject = document.getElementById("subject").value.trim();
+            let topic = document.getElementById("topic").value.trim();
+            let deadline = document.getElementById("deadline").value;
+
+            if (subject === "" || topic === "" || deadline === "") {
+                alert("Please fill in all fields!");
+                return;
+            }
+
+            tasks.push({
+                subject: subject,
+                topic: topic,
+                deadline: deadline,
+                completed: false
+            });
+
+            this.reset();
+            displayTasks();
+        });
+
+        function displayTasks() {
+            let list = document.getElementById("taskList");
+            list.innerHTML = "";
+
+            tasks.forEach(function(task, index) {
+                let card = document.createElement("div");
+                card.className = "border border-purple-200 p-4 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-3";
+
+                let details = document.createElement("div");
+
+                let heading = document.createElement("h3");
+                heading.className = "font-bold text-lg text-purple-700";
+                heading.textContent = task.subject;
+
+                let topicText = document.createElement("p");
+                topicText.className = "text-gray-600";
+                topicText.textContent = "Topic: " + task.topic;
+
+                let dateText = document.createElement("p");
+                dateText.className = "text-sm text-gray-500";
+                dateText.textContent = "Deadline: " + task.deadline;
+
+                let status = document.createElement("p");
+                status.className = task.completed
+                    ? "text-green-600 font-semibold"
+                    : "text-orange-500 font-semibold";
+
+                status.textContent = task.completed
+                    ? "Completed"
+                    : "Pending";
+
+                if (task.completed) {
+                    heading.classList.add("line-through");
+                }
+
+                details.appendChild(heading);
+                details.appendChild(topicText);
+                details.appendChild(dateText);
+                details.appendChild(status);
+
+                let buttons = document.createElement("div");
+                buttons.className = "flex gap-2 flex-wrap";
+
+                let completeBtn = document.createElement("button");
+                completeBtn.textContent = task.completed ? "Undo" : "Complete";
+                completeBtn.className = "bg-green-600 text-white px-3 py-2 rounded-lg hover:bg-green-700";
+
+                completeBtn.onclick = function() {
+                    tasks[index].completed = !tasks[index].completed;
+                    displayTasks();
+                };
+
+                let deleteBtn = document.createElement("button");
+                deleteBtn.textContent = "Delete";
+                deleteBtn.className = "bg-red-500 text-white px-3 py-2 rounded-lg hover:bg-red-600";
+
+                deleteBtn.onclick = function() {
+                    tasks.splice(index, 1);
+                    displayTasks();
+                };
+
+                buttons.appendChild(completeBtn);
+                buttons.appendChild(deleteBtn);
+
+                card.appendChild(details);
+                card.appendChild(buttons);
+                list.appendChild(card);
+            });
+
+            document.getElementById("totalTasks").textContent = tasks.length;
+
+            document.getElementById("completedTasks").textContent =
+                tasks.filter(function(task) {
+                    return task.completed;
+                }).length;
+
+            document.getElementById("pendingTasks").textContent =
+                tasks.filter(function(task) {
+                    return !task.completed;
+                }).length;
+
+            document.getElementById("emptyMessage").style.display =
+                tasks.length === 0 ? "block" : "none";
+        }
+    </script>
+
+</body>
+</html>
